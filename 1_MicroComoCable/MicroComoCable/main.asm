@@ -61,14 +61,14 @@ ldi r16, 255
 out PORTA, r16	;Puerto A con  Pull Up
 
 ldi r16, 255
-out DDRC, r16	;Puerto C como salida
+out DDRD, r16	;Puerto C como salida
 ldi r16, 0
-out PORTC, r16	;Lleno de 0s
+out PORTD, r16	;Lleno de 0s
 
 main:
 in r16, PINA	;Leer pin A
 com r16			;NOT
-out PORTC, r16	;Sacar a C
+out PORTD, r16	;Sacar a C
 rjmp main		;Loop
 
 
