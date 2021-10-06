@@ -61,9 +61,9 @@ ldi r16, 255
 out PORTA, r16	;Puerto A con  Pull Up
 
 ldi r16, 255
-out DDRC, r16	;Puerto C como salida
+out DDRD, r16	;Puerto D como salida
 ldi r16, 0
-out PORTC, r16	;Lleno de 0s
+out PORTD, r16	;Lleno de 0s
 
 main:
 in r16, PINA
@@ -103,57 +103,57 @@ rjmp off
 
 zero:
 	ldi r17, 0b0011_1111
-	out PORTC, r17
+	out PORTD, r17
 	rjmp main
 
 one:
 	ldi r17, 0b000_0110
-	out PORTC, r17
+	out PORTD, r17
 	rjmp main
 
 two:
 	ldi r17, 0b0101_1011
-	out PORTC, r17
+	out PORTD, r17
 	rjmp main
 
 three:
 	ldi r17, 0b0100_1111
-	out PORTC, r17
+	out PORTD, r17
 	rjmp main
 
 four:
 	ldi r17, 0b0110_0110
-	out PORTC, r17
+	out PORTD, r17
 	rjmp main
 
 five:
 	ldi r17, 0b0110_1101
-	out PORTC, r17
+	out PORTD, r17
 	rjmp main
 
 six:
 	ldi r17, 0b0111_1101
-	out PORTC, r17
+	out PORTD, r17
 	rjmp main
 
 seven:
 	ldi r17, 0b0010_0111
-	out PORTC, r17
+	out PORTD, r17
 	rjmp main
 
 eight:
 	ldi r17, 0b0111_1111
-	out PORTC, r17
+	out PORTD, r17
 	rjmp main
 
 nine:
 	ldi r17, 0b0110_1111
-	out PORTC, r17
+	out PORTD, r17
 	rjmp main
 
 off:
 	ldi r17, 0
-	out PORTC, r17
+	out PORTD, r17
 	rjmp main
 ;*********************************
 ;Aquí está el manejo de las interrupciones concretas
