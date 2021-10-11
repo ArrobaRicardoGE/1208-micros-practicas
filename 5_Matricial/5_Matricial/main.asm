@@ -1,7 +1,7 @@
 ;*******************
 ; Contadores Independientes
 ;
-; Created: 28-09-2021
+; Created: 07-10-2021
 ; Author : Ricardo Gutierrez
 ;*******************
 
@@ -13,6 +13,7 @@
 .def temporal2=r31
 .def left=r17
 .def right=r18
+.def new=r19
 
 ;Palabras claves (aquí pueden definirse)
 ;.equ LCD_DAT=DDRC
@@ -57,13 +58,13 @@ out SPL, r16
 ;No olvides configurar al inicio todo lo que utilizarás
 ;*********************************
 
-ldi r16, 0
-out DDRA, r16	;Puerto A como entrada
-ldi r16, 255
-out PORTA, r16	;Puerto A con  Pull Up
+ldi r16, 0b0000_1111	;Columnas salidas, filas entradas (respecto al micro)
+out DDRA, r16			;Puerto A para teclado matricial
+ldi r16, 0b1111_1111	;Teclado con pull up
+out PORTA, r16			
 
 ldi r16, 255
-out DDRD, r16	;Puerto C como salida
+out DDRD, r16	;Puerto D como salida
 ldi r16, 0
 out PORTD, r16	;Lleno de 0s
 
@@ -71,78 +72,72 @@ ldi left, 0
 ldi right, 0
 
 main:
-sbis PINA, 0
-rjmp reset_l
-sbis PINA, 2
-rjmp incrementar_l
-sbis PINA, 4
-rjmp reset_r
-sbis PINA, 6
-rjmp incrementar_r
-rjmp main
+ldi new, 10
+;Lógica del teclado
 
-incrementar_l:
-rcall retardo	; esperar a que la señal se estabilice
-sbic PINA, 2	; si el botón sigue presionado, NO volver a main (sí cambió de estado)
-rjmp main
-inc left
-cpi left, 16
-breq zero_l
-rcall output
-rcall traba2
-rjmp main
+;Primera columna
+ldi r16, 0b1111_1110
+out PORTA, r16
+nop
+nop
+sbis PINA, 6 ;1
+ldi new, 1
+sbis PINA, 5 ;4
+ldi new, 4
+sbis PINA, 4 ;7
+ldi new, 7
+cpi new, 10
+brne output
 
-reset_l:
-rcall retardo
-sbic PINA, 0
-rjmp main
-rcall zero_l
-rcall traba0
-rjmp main
+;Segunda columna
+ldi r16, 0b1111_1101
+out PORTA, r16
+nop
+nop
+sbis PINA, 7 ;0
+ldi new, 0
+sbis PINA, 6 ;2
+ldi new, 2
+sbis PINA, 5 ;5
+ldi new, 5
+sbis PINA, 4 ;8
+ldi new, 8
+cpi new, 10
+brne output
 
-zero_l:
-ldi left, 0
-rcall output
-rjmp main
+;Tercera columna
+ldi r16, 0b1111_1011
+out PORTA, r16
+nop
+nop
+sbis PINA, 6 ;3
+ldi new, 3
+sbis PINA, 5 ;6
+ldi new, 6
+sbis PINA, 4 ;9
+ldi new, 9
+cpi new, 10
+brne output
 
-incrementar_r:
-rcall retardo	; esperar a que la señal se estabilice
-sbic PINA, 6	; si el botón sigue presionado, NO volver a main (sí cambió de estado)
 rjmp main
-inc right
-cpi right, 16
-breq zero_r
-rcall traba6
-rcall output
-rjmp main
-
-reset_r:
-rcall retardo
-sbic PINA, 4
-rjmp main
-rcall traba4
-rcall zero_r
-rjmp main
-
-zero_r:
-ldi right, 0
-rcall output
-rjmp main
-
 
 output:
-mov temporal1, left
-swap temporal1
-or temporal1, right
-out PORTD, temporal1
-ret
+mov right, left
+mov left, new
+mov r16, right
+swap r16
+or r16, new
+out PORTD, r16
+rcall traba
+rjmp main
+
 
 retardo:	
-	ldi temporal1, 0xA0
+	ldi temporal1, 0xAA
 	ciclo1:
 		dec temporal1
 		breq salir
-		ldi temporal2, 0xA0
+		ldi temporal2, 0xAA
 	ciclo2:
 		dec temporal2
 		breq ciclo1
@@ -150,20 +145,40 @@ retardo:
 salir:
 ret
 
-traba0:
-	sbis PINA, 0
-	rjmp traba0
-	rcall retardo	; esperar a que la señal se estabilice
-	sbis PINA, 0	; si el botón sigue suelto, regresar, si no, traba
-	rjmp traba0
+traba:
+	;Identificar qué pin es el presionado
+	sbis PINA, 7
+	rcall traba7
+	sbis PINA, 6
+	rcall traba6
+	sbis PINA, 5
+	rcall traba5
+	sbis PINA, 4
+	rcall traba4
 	ret
 
-traba2:
-	sbis PINA, 2
-	rjmp traba2
+traba7:
+	sbis PINA, 7
+	rjmp traba7
+	rcall retardo	;esperar a que la señal se estabilice
+	sbis PINA, 7	;si el botón sigue suelto, regresar, si no, traba
+	rjmp traba7
+	ret
+
+traba6:
+	sbis PINA, 6
+	rjmp traba6
 	rcall retardo
-	sbis PINA, 2
-	rjmp traba2
+	sbis PINA, 6
+	rjmp traba6
+	ret
+
+traba5:
+	sbis PINA, 5
+	rjmp traba5
+	rcall retardo
+	sbis PINA, 5
+	rjmp traba5
 	ret
 
 traba4:
@@ -174,13 +189,6 @@ traba4:
 	rjmp traba4
 	ret
 
-traba6:
-	sbis PINA, 6
-	rjmp traba6
-	rcall retardo
-	sbis PINA, 6
-	rjmp traba6
-	ret
 
 ;*********************************
 ;Aquí está el manejo de las interrupciones concretas
