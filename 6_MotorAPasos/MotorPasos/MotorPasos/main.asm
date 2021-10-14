@@ -66,13 +66,15 @@ ldi r16, 255	;Con pullup
 out PORTB, r16
 
 main:
+ldi r16, 0
+out PORTA, r16
 sbis PINB, 0
-rjmp wise
+rjmp turn_wise
 sbis PINB, 1
-rjmp counter
+rjmp turn_counter
 rjmp main
 
-counter:
+turn_counter:
 ldi r16, 0x01
 out PORTA, r16
 rcall retardo_motor
@@ -87,7 +89,7 @@ out PORTA, r16
 rcall retardo_motor
 rjmp main
 
-wise:
+turn_wise:
 ldi r16, 0b0000_1000
 out PORTA, r16
 rcall retardo_motor
@@ -102,13 +104,23 @@ out PORTA, r16
 rcall retardo_motor
 rjmp main 
 
-
 retardo_motor:
-nop
-
-
-
-
+; ============================= 
+;    delay loop generator 
+;     2500 cycles:
+; ----------------------------- 
+; delaying 2499 cycles:
+          ldi  R17, $07
+WGLOOP0:  ldi  R18, $76
+WGLOOP1:  dec  R18
+          brne WGLOOP1
+          dec  R17
+          brne WGLOOP0
+; ----------------------------- 
+; delaying 1 cycle:
+          nop
+; ============================= 
+ret
 
 retardo:	
 	ldi temporal1, 0xAA
@@ -125,46 +137,26 @@ ret
 
 traba:
 	;Identificar qué pin es el presionado
-	sbis PINA, 7
-	rcall traba7
-	sbis PINA, 6
-	rcall traba6
-	sbis PINA, 5
-	rcall traba5
-	sbis PINA, 4
-	rcall traba4
+	sbis PINA, 0
+	rcall traba0
+	sbis PINA, 1
+	rcall traba1
 	ret
 
-traba7:
-	sbis PINA, 7
-	rjmp traba7
+traba0:
+	sbis PINA, 0
+	rjmp traba0
 	rcall retardo	;esperar a que la señal se estabilice
-	sbis PINA, 7	;si el botón sigue suelto, regresar, si no, traba
-	rjmp traba7
+	sbis PINA, 0	;si el botón sigue suelto, regresar, si no, traba
+	rjmp traba0
 	ret
 
-traba6:
-	sbis PINA, 6
-	rjmp traba6
-	rcall retardo
-	sbis PINA, 6
-	rjmp traba6
-	ret
-
-traba5:
-	sbis PINA, 5
-	rjmp traba5
-	rcall retardo
-	sbis PINA, 5
-	rjmp traba5
-	ret
-
-traba4:
-	sbis PINA, 4
-	rjmp traba4
-	rcall retardo
-	sbis PINA, 4
-	rjmp traba4
+traba1:
+	sbis PINA, 1
+	rjmp traba1
+	rcall retardo	;esperar a que la señal se estabilice
+	sbis PINA, 1	;si el botón sigue suelto, regresar, si no, traba
+	rjmp traba1
 	ret
 
 
