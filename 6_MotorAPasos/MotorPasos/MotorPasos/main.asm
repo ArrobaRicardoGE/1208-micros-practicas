@@ -104,25 +104,9 @@ rjmp main
 
 
 retardo_motor:
-	; ============================= 
-	;    delay loop generator 
-	;     3000 cycles:
-	; ----------------------------- 
-	; delaying 2997 cycles:
-			  ldi  temporal1, $A9
-	WGLOOP0:  ldi  temporal2, $6E
-	WGLOOP1:  dec  temporal2
-			  brne WGLOOP1
-			  dec  temporal1
-			  brne WGLOOP0
-	; ----------------------------- 
-	; delaying 3 cycles:
-			  ldi  temporal1, $01
-	WGLOOP2:  dec  temporal1
-			  brne WGLOOP2
-	; ============================= 
+nop
 
-	/*ret*/
+
 
 
 
