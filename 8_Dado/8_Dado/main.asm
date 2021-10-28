@@ -142,7 +142,7 @@ push r17
 ; Rebote
 rcall retardo
 sbic PIND, 2
-reti
+rjmp exit
 cpi r18, 1
 breq call1
 cpi r18, 2
