@@ -58,37 +58,157 @@ out SPL, r16
 ;*********************************
 
 ; Configuracion de los puertos
+ldi r16, 0
+out DDRA, r16
 ldi r16, 255
+out PORTA, r16
 out DDRB, r16
 
-; Configuracion del timer
+main:
+sbis PINA, 0
+rjmp do
+sbis PINA, 1 
+rjmp re
+sbis PINA, 2
+rjmp mi
+sbis PINA, 3
+rjmp fa
+sbis PINA, 4
+rjmp sol
+sbis PINA, 5
+rjmp la
+sbis PINA, 6
+rjmp si
+rjmp main
 
+sound_on:
 ldi r16, 0b0001_1011	; Prescaler 64, modo CTC, toggle
 out TCCR0, r16
-ldi r16, 29 ; DO
-ldi r16, 26 ; RE
-ldi r16, 23 ; MI
-ldi r16, 21 ; FA
-ldi r16, 19 ; SOL
-ldi r16, 17 ; LA
-ldi r16, 15 ; SI
-out OCR0, r16
+ret
 
-main:
+sound_off:
+ldi r16, 0
+out TCCR0, r16
+ret
+
+do:
+rcall sound_on
+ldi r16, 29
+out OCR0, r16
+rcall traba0
+rcall sound_off
+rjmp main
+re:
+rcall sound_on
+ldi r16, 26
+out OCR0, r16
+rcall traba1
+rcall sound_off
+rjmp main
+mi:
+rcall sound_on
+ldi r16, 23
+out OCR0, r16
+rcall traba2
+rcall sound_off
+rjmp main
+fa:
+rcall sound_on
+ldi r16, 21 
+out OCR0, r16
+rcall traba3
+rcall sound_off
+rjmp main
+sol:
+rcall sound_on
+ldi r16, 19 
+out OCR0, r16
+rcall traba4
+rcall sound_off
+rjmp main
+la:
+rcall sound_on
+ldi r16, 17
+out OCR0, r16
+rcall traba5
+rcall sound_off
+rjmp main
+si:
+rcall sound_on
+ldi r16, 15
+out OCR0, r16
+rcall traba6
+rcall sound_off
 rjmp main
 
 retardo:	
-	ldi r30, 0xA0
+	ldi r30, 0x05
 	ciclo1:
 		dec r30
 		breq salir
-		ldi r31, 0xA0
+		ldi r31, 0x05
 	ciclo2:
 		dec r31
 		breq ciclo1
 		rjmp ciclo2 
 salir:
 ret
+
+traba0:
+	sbis PINA, 0
+	rjmp traba0
+	rcall retardo	;esperar a que la señal se estabilice
+	sbis PINA, 0	;si el botón sigue suelto, regresar, si no, traba
+	rjmp traba0
+	ret
+
+traba1:
+	sbis PINA, 1
+	rjmp traba1
+	rcall retardo
+	sbis PINA, 1
+	rjmp traba1
+	ret
+
+traba2:
+	sbis PINA, 2
+	rjmp traba2
+	rcall retardo
+	sbis PINA, 2
+	rjmp traba2
+	ret
+
+traba3:
+	sbis PINA, 3
+	rjmp traba3
+	rcall retardo
+	sbis PINA, 3
+	rjmp traba3
+	ret
+
+traba4:
+	sbis PINA, 4
+	rjmp traba4
+	rcall retardo
+	sbis PINA, 4
+	rjmp traba4
+	ret
+
+traba5:
+	sbis PINA, 5
+	rjmp traba5
+	rcall retardo
+	sbis PINA, 5
+	rjmp traba5
+	ret
+
+traba6:
+	sbis PINA, 6
+	rjmp traba6
+	rcall retardo
+	sbis PINA, 6
+	rjmp traba6
+	ret
 
 ;*********************************
 ;Aquí está el manejo de las interrupciones concretas
