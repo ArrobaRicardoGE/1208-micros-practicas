@@ -9,7 +9,9 @@
    
 ;*******************
 ;Registros (aquí pueden definirse)
-;.def temporal=r19
+.def midiendo=r24
+.def d1=r20
+.def d2=r21
 
 ;Palabras claves (aquí pueden definirse)
 ;.equ LCD_DAT=DDRC
@@ -70,20 +72,66 @@ out DDRC, r16
 out PORTB, r16
 
 main:
-sbis PINB, 0
-rjmp medir
+sbic PINB, 0
 rjmp main
+rcall traba0
+rjmp medir
 
 medir:
-sbis PINA, 0
+cpi midiendo, 1
+breq subir
+cpi midiendo, 2
+breq bajar
+cpi midiendo, 3
+breq terminar
+sbis PINA, 0	; Espero a que baje
+ldi midiendo, 1
 rjmp medir
-ldi r18, 0
-nop
-term:
-sbis PINA, 0
-rjmp term
-out PORTC, r18
+subir:
+sbis PINA, 0	; Espero a que suba
+rjmp medir
+ldi midiendo, 2
+ldi d1, 0
+ldi d2, 0
+rjmp medir
+bajar:
+sbis PINA, 0	; Espero a que baje
+ldi midiendo, 3
+rjmp medir
+terminar:
+sbis PINA, 0	; Espero a que suba
+rjmp medir
+rcall output
+ldi midiendo, 0
 rjmp main
+
+output:
+mov r16, d2
+swap r16
+or r16, d1
+out PORTC, r16
+ret
+
+traba0:
+	sbis PINB, 0
+	rjmp traba0
+	rcall retardo	;esperar a que la señal se estabilice
+	sbis PINB, 0	;si el botón sigue suelto, regresar, si no, traba
+	rjmp traba0
+	ret
+
+retardo:	
+	ldi r30, 0xA5
+	ciclo1:
+		dec r30
+		breq salir
+		ldi r31, 0xA5
+	ciclo2:
+		dec r31
+		breq ciclo1
+		rjmp ciclo2 
+salir:
+ret
 
 ;*********************************
 ;Aquí está el manejo de las interrupciones concretas
@@ -127,7 +175,12 @@ reti ; IRQ2 Handler
 TIM0_COMP: 
 in r17, SREG
 push r17
-inc r18
+inc d1
+cpi d1, 10
+brne end
+ldi d1, 0
+inc d2
+end:
 pop r17
 out SREG, r17
 reti
