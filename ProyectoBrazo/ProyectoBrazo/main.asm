@@ -190,7 +190,7 @@ brne loop_gd
 ret
 
 soltar:
-ldi i, 130
+ldi i, 180
 loop_ba:
 ldi motor, 0b0000_1100
 out PORTD, motor
@@ -209,7 +209,7 @@ brne loop_ba
 ret
 
 agarrar:
-ldi i, 130
+ldi i, 180
 loop_ss:
 ldi motor, 0b0000_1001
 out PORTD, motor
