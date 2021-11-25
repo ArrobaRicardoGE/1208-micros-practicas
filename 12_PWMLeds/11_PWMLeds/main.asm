@@ -1,7 +1,7 @@
 ;*******************
-; Práctica 09: Cronómetro
+; Práctica 11: PWM y LEDs
 ;
-; Created: 09/11/2021
+; Created: 24/11/2021
 ; Author : Ricardo Gutiérrez
 ;*******************
 
@@ -9,7 +9,6 @@
    
 ;*******************
 ;Registros (aquí pueden definirse)
-;.def temporal=r19
 
 ;Palabras claves (aquí pueden definirse)
 ;.equ LCD_DAT=DDRC
@@ -52,43 +51,62 @@ out SPL, r16
 ;*********************************
 ;Aquí comienza el programa...
 ;No olvides configurar al inicio todo lo que utilizarás
-;*********************************
-
-; Habilitar interrupciones
-sei
+;********************************
 
 ; Configuracion del timer
-ldi r16, 155
-out OCR0, r16
-
-ldi r16, 0b0000_1_100	; Prescaler 256, modo CTC
+ldi r16, 0b01_10_1_010	; Prescaler 8, modo CTC
 out TCCR0, r16
+ldi r17, 1
+out OCR0, r17
+ldi r17, 1
+out PORTB, r17
 
-; Activar solo comparacion
-ldi r16, 0b0000_00_10
-out TIMSK, r16
-
-; Configuracion de puertos
-ldi r16, 255
+ldi r16, 0
 out DDRA, r16
-ldi r16, 0
-out PORTA, r16
-
-ldi r18, 0
-
-main:
-cpi r18, 100
-brlt main
-ldi r18, 0
 ldi r16, 255
+out DDRB, r16
 out PORTA, r16
-rcall retardo
+main:
+sbis PINA, 0
+rjmp subir
+sbis PINA, 1
+rjmp bajar
+rjmp main
+
+subir:
+inc r17
+out OCR0, r17
+cpi r17, 200
+brsh red
 ldi r16, 0
-out PORTA, r16
+out PORTB, r16
+rjmp next
+
+bajar: 
+dec r17
+out OCR0, r17
+cpi r17, 200
+brsh red
+ldi r16, 0
+out PORTB, r16
+rjmp next
+
+red:
+ldi r16, 0xF0
+out PORTB, r16
+next:
+cpi r17, 50
+brge green
+rjmp fin
+green:
+ldi r16, 0x0F
+out PORTB, r16
+fin:
+rcall retardo
 rjmp main
 
 retardo:	
-	ldi r30, 0xA0
+	ldi r30, 0x08
 	ciclo1:
 		dec r30
 		breq salir
@@ -140,11 +158,6 @@ reti ; Two-wire Serial Interface Handler
 EXT_INT2: 
 reti ; IRQ2 Handler
 TIM0_COMP:
-in r17, SREG
-push r17
-inc r18
-pop r17
-out SREG, r17
 reti
 SPM_RDY: 
 reti ; Store Program Memory Ready Handler
